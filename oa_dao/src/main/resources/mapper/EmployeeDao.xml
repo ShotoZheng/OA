@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.4//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shoto.oa.dao.EmployeeDao">
+
+    <!--自定义映射配置-->
+    <resultMap id="employee" type="com.shoto.oa.entity.Employee">
+        <id property="sn" column="sn" javaType="String"/>
+        <result property="password" column="password" javaType="String"/>
+        <result property="name" column="name" javaType="String"/>
+        <result property="departmentSn" column="department_sn" javaType="String"/>
+        <result property="post" column="post" javaType="String"/>
+        <!--配置关联映射-->
+        <association property="department" column="department_sn" javaType="Department">
+            <id property="sn" column="dsn" javaType="String"/>
+            <result property="name" column="dname" javaType="String"/>
+        </association>
+    </resultMap>
+
+    <insert id="insert" parameterType="Employee">
+        insert into employee values (#{sn}, #{password}, #{name}, #{departmentSn}, #{post})
+    </insert>
+
+    <update id="update" parameterType="Employee">
+        update employee set name = #{name}, password = #{password}, department_sn = #{departmentSn}, post = #{post} where sn = #{sn}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        delete from employee where sn = #{sn}
+    </delete>
+
+    <select id="select" parameterType="String" resultMap="employee">
+        /*关联查询*/
+        select e.*, d.sn dsn, d.name dname from employee e left join department d on d.sn = e.department_sn where e.sn = #{sn}
+    </select>
+
+    <select id="selectAll" resultMap="employee">
+        select e.*, d.sn dsn, d.name dname from employee e left join department d on d.sn = e.department_sn
+    </select>
+
+    <select id="selectByDepartmentAndPost" resultMap="employee">
+        select e.*,d.sn dsn,d.name dname from employee e left join department d on d.sn=e.department_sn
+        where e.sn is not NULL
+        <if test="dsn != null">
+          and e.department_sn = #{dsn}
+        </if>
+        <if test="post != null">
+            and e.post = #{post}
+        </if>
+    </select>
+</mapper>
